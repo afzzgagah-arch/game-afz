@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro Snake Game</title>
+    <title>Smartphone Tycoon - Jual Beli HP</title>
     <style>
         * {
             margin: 0;
@@ -11,245 +11,321 @@
             box-sizing: border-box;
         }
         body {
-            background-color: #1a1a2e;
-            font-family: 'Segoe UI', sans-serif;
+            background-color: #0f172a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f8fafc;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            color: #fff;
-            overflow: hidden;
+            padding: 20px;
         }
-        .game-container {
-            text-align: center;
-            max-width: 100%;
-            padding: 10px;
+        .game-card {
+            background-color: #1e293b;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            padding: 20px;
+            border: 2px solid #334155;
         }
         h1 {
-            font-size: 28px;
+            text-align: center;
+            color: #38bdf8;
+            font-size: 24px;
             margin-bottom: 5px;
-            letter-spacing: 2px;
-            color: #4ecca3;
-            text-shadow: 0 0 10px rgba(78, 204, 163, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .score-board {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #eee;
+        .author {
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 20px;
         }
-        #gameCanvas {
-            background-color: #162447;
-            border: 4px solid #4ecca3;
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            background-color: #0f172a;
+            padding: 12px;
             border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-            display: block;
-            margin: 0 auto;
-            max-width: 100%;
+            margin-bottom: 20px;
+            font-weight: bold;
+            border: 1px solid #334155;
         }
-        .controls {
-            margin-top: 15px;
+        .money { color: #4ade80; }
+        .inventory-count { color: #a78bfa; }
+        
+        .customer-section {
+            background-color: #334155;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .customer-title {
             font-size: 14px;
-            color: #818698;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: bold;
         }
+        .dialogue {
+            font-size: 16px;
+            font-style: italic;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .hp-specs {
+            font-size: 13px;
+            background: #1e293b;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        button {
+            background-color: #38bdf8;
+            color: #0f172a;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:disabled { background-color: #64748b; color: #94a3b8; cursor: not-allowed; transform: none; }
+        button.btn-danger { background-color: #f87171; color: #fff; }
+        button.btn-success { background-color: #4ade80; color: #0f172a; }
+        
+        .log-section {
+            margin-top: 20px;
+            background-color: #0f172a;
+            padding: 10px;
+            border-radius: 8px;
+            height: 100px;
+            overflow-y: auto;
+            font-size: 12px;
+            color: #94a3b8;
+            border: 1px solid #334155;
+        }
+        .log-entry { margin-bottom: 4px; }
+        .log-success { color: #4ade80; }
+        .log-fail { color: #f87171; }
     </style>
 </head>
 <body>
 
-<div class="game-container">
-    <h1>RETRO SNAKE</h1>
-    <div class="score-board">Skor: <span id="score">0</span></div>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
-    <div class="controls">
-        Gunakan **Panah Keyboard** (W/A/S/D) untuk berbelok.<br>
-        Atau **Sentuh/Geser Layar** jika bermain di HP.
+<div class="game-card">
+    <h1>Konter Tycoon</h1>
+    <div class="author">Game oleh: LIHAN</div>
+
+    <!-- Status Toko -->
+    <div class="status-bar">
+        <div>Modal: <span id="money" class="money">Rp 5.000.000</span></div>
+        <div>Stok HP: <span id="inventory" class="inventory-count">0/3</span></div>
+    </div>
+
+    <!-- Area Pelanggan -->
+    <div id="customerBox" class="customer-section">
+        <!-- Konten diisi otomatis oleh JavaScript -->
+    </div>
+
+    <!-- Tombol Aksi -->
+    <div class="action-buttons">
+        <button id="btnLeft" onclick="handleAction('left')">Beli</button>
+        <button id="btnRight" onclick="handleAction('right')" class="btn-danger">Tolak</button>
+    </div>
+
+    <!-- Log Aktivitas -->
+    <div id="logBox" class="log-section">
+        <div class="log-entry">Toko resmi dibuka! Menunggu pelanggan datang...</div>
     </div>
 </div>
 
 <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const scoreElement = document.getElementById("score");
+    // State Game
+    let money = 5000000;
+    let inventory = [];
+    const maxInventory = 3;
+    let currentEvent = null; // Menyimpan data pelanggan saat ini
 
-    const gridSize = 20;
-    const tileCount = canvas.width / gridSize;
+    // Data HP untuk variasi game
+    const hpModels = [
+        { name: "iPhon 11", basePrice: 3500000 },
+        { name: "Samsul Galaxy S20", basePrice: 3000000 },
+        { name: "Siomi Note 12", basePrice: 1500000 },
+        { name: "Infinik Hot 40", basePrice: 1000000 },
+        { name: "Opo Reno 8", basePrice: 2200000 }
+    ];
 
-    // Logika Ular
-    let snake = [{x: 10, y: 10}];
-    let food = {x: 5, y: 5};
-    let dx = 1; // arah x (1 = kanan, -1 = kiri)
-    let dy = 0; // arah y (1 = bawah, -1 = atas)
-    let score = 0;
-    let gameInterval;
-    let gameSpeed = 100; // Kecepatan game dalam milidetik
-    let gameOver = false;
+    const conditions = [
+        { label: "Mulus Likenew", multiplier: 1.1 },
+        { label: "Layar Retak Dikit", multiplier: 0.7 },
+        { label: "Batangan / No Box", multiplier: 0.8 },
+        { label: "Bootloop / Mati Total", multiplier: 0.4 }
+    ];
 
-    function main() {
-        if (gameOver) return;
+    const customerNames = ["Andi", "Budi", "Siti", "Rian", "Dewi", "Fajar"];
 
-        if (hasGameEnded()) {
-            gameOver = true;
-            drawGameOver();
-            return;
-        }
-
-        clearCanvas();
-        drawFood();
-        moveSnake();
-        drawSnake();
+    function formatRupiah(angka) {
+        return "Rp " + angka.toLocaleString('id-ID');
     }
 
-    // Mulai game loop
-    resetGame();
+    function addLog(text, type = '') {
+        const logBox = document.getElementById("logBox");
+        const entry = document.createElement("div");
+        entry.className = `log-entry ${type}`;
+        entry.innerText = text;
+        logBox.appendChild(entry);
+        logBox.scrollTop = logBox.scrollHeight;
+    }
 
-    function resetGame() {
-        snake = [{x: 10, y: 10}];
-        generateFood();
-        dx = 1;
-        dy = 0;
-        score = 0;
-        scoreElement.textContent = score;
-        gameOver = false;
+    function updateUI() {
+        document.getElementById("money").innerText = formatRupiah(money);
+        document.getElementById("inventory").innerText = `${inventory.length}/${maxInventory}`;
+    }
+
+    // Memunculkan pelanggan baru secara acak (bisa mau jual atau mau beli)
+    function generateCustomer() {
+        updateUI();
+        const customerBox = document.getElementById("customerBox");
+        const btnLeft = document.getElementById("btnLeft");
+        const btnRight = document.getElementById("btnRight");
         
-        clearInterval(gameInterval);
-        gameInterval = setInterval(main, gameSpeed);
-    }
+        const name = customerNames[Math.floor(Math.random() * customerNames.length)];
+        
+        // Keputusan: Pelanggan mau JUAL ke kita, atau MAU BELI dari kita
+        // Jika inventori kosong, otomatis ada orang jual. Jika penuh, otomatis ada orang beli.
+        let mode = Math.random() > 0.5 ? 'jual' : 'beli';
+        if (inventory.length === 0) mode = 'jual';
+        if (inventory.length >= maxInventory) mode = 'beli';
 
-    function clearCanvas() {
-        ctx.fillStyle = "#162447";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+        if (mode === 'jual') {
+            // Pelanggan mau menjual HP bekasnya ke toko kita
+            const hp = hpModels[Math.floor(Math.random() * hpModels.length)];
+            const cond = conditions[Math.floor(Math.random() * conditions.length)];
+            
+            // Hitung harga tawaran dari pelanggan
+            let offerPrice = Math.floor(hp.basePrice * cond.multiplier * (0.8 + Math.random() * 0.2));
+            // Bulatkan ke kelipatan 50rb
+            offerPrice = Math.floor(offerPrice / 50000) * 50000;
 
-    function drawSnake() {
-        snake.forEach((part, index) => {
-            // Kepala ular warna hijau terang, badan warna hijau biasa
-            ctx.fillStyle = index === 0 ? "#4ecca3" : "#349274";
-            ctx.strokeStyle = "#162447";
-            ctx.fillRect(part.x * gridSize, part.y * gridSize, gridSize, gridSize);
-            ctx.strokeRect(part.x * gridSize, part.y * gridSize, gridSize, gridSize);
-        });
-    }
+            currentEvent = {
+                type: 'jual',
+                hpName: hp.name,
+                condition: cond.label,
+                price: offerPrice,
+                estimatedValue: Math.floor(hp.basePrice * cond.multiplier) // Harga pasaran asli
+            };
 
-    function moveSnake() {
-        const head = {x: snake[0].x + dx, y: snake[0].y + dy};
-        snake.unshift(head);
+            customerBox.innerHTML = `
+                <div class="customer-title">Pelanggan: ${name} (Mau Jual)</div>
+                <div class="dialogue">"Bang, saya mau jual ${currentEvent.hpName} saya nih. Lagi butuh uang mendesak."</div>
+                <div class="hp-specs">
+                    <strong>Kondisi:</strong> ${currentEvent.condition}<br>
+                    <strong>Harga Ditawarkan:</strong> <span class="money">${formatRupiah(offerPrice)}</span>
+                </div>
+            `;
+            
+            btnLeft.innerText = "Beli HP";
+            btnLeft.className = "btn-success";
+            btnRight.innerText = "Tolak";
+            btnRight.className = "btn-danger";
+            
+            // Disable jika uang tidak cukup
+            btnLeft.disabled = money < offerPrice;
 
-        // Cek jika ular memakan makanan
-        if (snake[0].x === food.x && snake[0].y === food.y) {
-            score += 10;
-            scoreElement.textContent = score;
-            generateFood();
         } else {
-            snake.pop(); // Hapus ekor jika tidak makan
+            // Pelanggan mau membeli salah satu koleksi HP kita
+            const randomIndex = Math.floor(Math.random() * inventory.length);
+            const targetHp = inventory[randomIndex];
+            
+            // Pelanggan menawar harga (bisa untung besar atau tipis tergantung keberuntungan)
+            let buyOffer = Math.floor(targetHp.estimatedValue * (1.1 + Math.random() * 0.3));
+            buyOffer = Math.floor(buyOffer / 50000) * 50000;
+
+            currentEvent = {
+                type: 'beli',
+                inventoryIndex: randomIndex,
+                hpName: targetHp.name,
+                price: buyOffer,
+                profit: buyOffer - targetHp.boughtPrice
+            };
+
+            customerBox.innerHTML = `
+                <div class="customer-title">Pelanggan: ${name} (Mau Beli)</div>
+                <div class="dialogue">"Saya nyari HP seken. Itu yang di etalase, ${currentEvent.hpName}, kalau harganya cocok saya angkut."</div>
+                <div class="hp-specs">
+                    <strong>Kondisi HP kamu:</strong> ${targetHp.condition}<br>
+                    <strong>Dia Tawar Seharga:</strong> <span class="money">${formatRupiah(buyOffer)}</span>
+                </div>
+            `;
+
+            btnLeft.innerText = "Lepas (Jual)";
+            btnLeft.className = "btn-success";
+            btnRight.innerText = "Jangan Jual";
+            btnRight.className = "btn-danger";
+            btnLeft.disabled = false;
         }
     }
 
-    function generateFood() {
-        food.x = Math.floor(Math.random() * tileCount);
-        food.y = Math.floor(Math.random() * tileCount);
+    function handleAction(choice) {
+        if (!currentEvent) return;
 
-        // Pastikan makanan tidak muncul di tubuh ular
-        snake.forEach(part => {
-            if (part.x === food.x && part.y === food.y) {
-                generateFood();
+        if (currentEvent.type === 'jual') {
+            if (choice === 'left') {
+                // Konfirmasi Beli
+                money -= currentEvent.price;
+                inventory.push({
+                    name: currentEvent.hpName,
+                    condition: currentEvent.condition,
+                    boughtPrice: currentEvent.price,
+                    estimatedValue: currentEvent.estimatedValue
+                });
+                addLog(`Berhasil membeli ${currentEvent.hpName} seharga ${formatRupiah(currentEvent.price)}`, 'log-success');
+            } else {
+                addLog(`Kamu menolak tawaran penjualan HP.`);
             }
-        });
+        } else if (currentEvent.type === 'beli') {
+            if (choice === 'left') {
+                // Konfirmasi Jual ke pelanggan
+                money += currentEvent.price;
+                // Hapus dari inventori
+                inventory.splice(currentEvent.inventoryIndex, 1);
+                
+                const untungRugi = currentEvent.profit >= 0 ? 'Untung' : 'Rugi';
+                const logClass = currentEvent.profit >= 0 ? 'log-success' : 'log-fail';
+                
+                addLog(`Jual ${currentEvent.hpName}! Dapat ${formatRupiah(currentEvent.price)} (${untungRugi}: ${formatRupiah(Math.abs(currentEvent.profit))})`, logClass);
+            } else {
+                addLog(`Kamu menolak melepas HP ke pembeli.`);
+            }
+        }
+
+        // Reset event dan panggil pelanggan berikutnya setelah jeda singkat
+        currentEvent = null;
+        updateUI();
+        
+        document.getElementById("customerBox").innerHTML = `<div class="dialogue" style="text-align:center;">Mencari pelanggan baru...</div>`;
+        document.getElementById("btnLeft").disabled = true;
+        document.getElementById("btnRight").disabled = true;
+
+        setTimeout(generateCustomer, 1200);
     }
 
-    function drawFood() {
-        ctx.fillStyle = "#e056fd"; // Warna makanan (ungu neon)
-        ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
-    }
-
-    function hasGameEnded() {
-        // Tabrak dinding kiri/kanan/atas/bawah
-        if (snake[0].x < 0 || snake[0].x >= tileCount || snake[0].y < 0 || snake[0].y >= tileCount) {
-            return true;
-        }
-        // Tabrak badan sendiri
-        for (let i = 1; i < snake.length; i++) {
-            if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) return true;
-        }
-        return false;
-    }
-
-    function drawGameOver() {
-        ctx.fillStyle = "rgba(22, 36, 71, 0.85)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.fillStyle = "#ff4a5a";
-        ctx.font = "bold 30px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 15);
-
-        ctx.fillStyle = "#fff";
-        ctx.font = "16px sans-serif";
-        ctx.fillText("Tekan tombol apapun / Klik untuk reset", canvas.width / 2, canvas.height / 2 + 25);
-    }
-
-    // Kontrol Keyboard
-    document.addEventListener("keydown", event => {
-        if (gameOver) {
-            resetGame();
-            return;
-        }
-
-        const keyPressed = event.key.toLowerCase();
-        const goingUp = dy === -1;
-        const goingDown = dy === 1;
-        const goingRight = dx === 1;
-        const goingLeft = dx === -1;
-
-        if ((keyPressed === "arrowleft" || keyPressed === "a") && !goingRight) {
-            dx = -1; dy = 0;
-        }
-        if ((keyPressed === "arrowup" || keyPressed === "w") && !goingDown) {
-            dx = 0; dy = -1;
-        }
-        if ((keyPressed === "arrowright" || keyPressed === "d") && !goingLeft) {
-            dx = 1; dy = 0;
-        }
-        if ((keyPressed === "arrowdown" || keyPressed === "s") && !goingUp) {
-            dx = 0; dy = 1;
-        }
-    });
-
-    // Kontrol Sentuh/Klik untuk HP atau restart cepat
-    canvas.addEventListener("click", () => {
-        if (gameOver) resetGame();
-    });
-
-    // Fitur Geser Layar (Swipe) untuk HP
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    document.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-    }, false);
-
-    document.addEventListener('touchend', e => {
-        if (gameOver) {
-            resetGame();
-            return;
-        }
-
-        let touchEndX = e.changedTouches[0].screenX;
-        let touchEndY = e.changedTouches[0].screenY;
-
-        let diffX = touchEndX - touchStartX;
-        let diffY = touchEndY - touchStartY;
-
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-            // Gerakan Horizontal
-            if (diffX > 0 && dx !== -1) { dx = 1; dy = 0; } // Kanan
-            else if (diffX < 0 && dx !== 1) { dx = -1; dy = 0; } // Kiri
-        } else {
-            // Gerakan Vertikal
-            if (diffY > 0 && dy !== -1) { dx = 0; dy = 1; } // Bawah
-            else if (diffY < 0 && dy !== 1) { dx = 0; dy = -1; } // Atas
-        }
-    }, false);
+    // Jalankan game pertama kali
+    setTimeout(generateCustomer, 500);
 </script>
 
 </body>
