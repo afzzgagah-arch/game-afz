@@ -5,4 +5,5 @@
 
 ---
  **Support by:** Google Gemini ai
+ 
  **Game oleh:** Afzyy
