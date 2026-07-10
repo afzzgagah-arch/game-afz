@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Bird Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #2c3e50;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            color: #fff;
+        }
+        h1 {
+            margin-bottom: 10px;
+            font-size: 24px;
+            text-shadow: 2px 2px #000;
+        }
+        #gameCanvas {
+            background-color: #70c5ce;
+            border: 4px solid #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 100%;
+        }
+        .instruction {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #bdc3c7;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>RETRO BIRD</h1>
+    <canvas id="gameCanvas" width="400" height="500"></canvas>
+    <div class="instruction">
+        Tekan **SPASI** atau **KLIK LAYAR** untuk melompat.<br>
+        Jangan sampai menabrak tiang!
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Karakter Burung
+        let bird = {
+            x: 50,
+            y: 150,
+            width: 30,
+            height: 24,
+            gravity: 0.4,
+            velocity: 0,
+            jump: -6.5
+        };
+
+        // Tiang/Rintangan
+        let pipes = [];
+        let pipeWidth = 50;
+        let pipeGap = 130; // Jarak celah vertikal
+        let frameCount = 0;
+        
+        let score = 0;
+        let gameOver = false;
+
+        function resetGame() {
+            bird.y = 150;
+            bird.velocity = 0;
+            pipes = [];
+            score = 0;
+            frameCount = 0;
+            gameOver = false;
+        }
+
+        // Kontrol Lompat
+        function drawBird() {
+            ctx.fillStyle = "#f1c40f"; // Warna burung kuning
+            ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+            
+            // Mata burung
+            ctx.fillStyle = "#000";
+            ctx.fillRect(bird.x + 20, bird.y + 4, 4, 4);
+            // Paruh
+            ctx.fillStyle = "#e67e22";
+            ctx.fillRect(bird.x + 28, bird.y + 8, 6, 6);
+        }
+
+        function handleJump() {
+            if (gameOver) {
+                resetGame();
+            } else {
+                bird.velocity = bird.jump;
+            }
+        }
+
+        // Input Event
+        document.addEventListener("keydown", function(e) {
+            if (e.code === "Space") {
+                handleJump();
+                e.preventDefault();
+            }
+        });
+
+        canvas.addEventListener("click", function() {
+            handleJump();
+        });
+
+        // Loop Utama Game
+        function update() {
+            frameCount++;
+
+            // Gravitasi Burung
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+
+            // Batas Atas & Bawah Canvas
+            if (bird.y + bird.height > canvas.height || bird.y < 0) {
+                gameOver = true;
+            }
+
+            // Munculkan Tiang Baru setiap 100 frame
+            if (frameCount % 100 === 0) {
+                let minHeight = 50;
+                let maxHeight = canvas.height - pipeGap - minHeight;
+                let height = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+
+                pipes.push({
+                    x: canvas.width,
+                    topHeight: height,
+                    bottomY: height + pipeGap,
+                    passed: false
+                });
+            }
+
+            // Update Tiang
+            for (let i = pipes.length - 1; i >= 0; i--) {
+                pipes[i].x -= 3; // Kecepatan tiang bergerak ke kiri
+
+                // Deteksi Tabrakan (Collision)
+                if (
+                    bird.x < pipes[i].x + pipeWidth &&
+                    bird.x + bird.width > pipes[i].x &&
+                    (bird.y < pipes[i].topHeight || bird.y + bird.height > pipes[i].bottomY)
+                ) {
+                    gameOver = true;
+                }
+
+                // Hitung Skor
+                if (!pipes[i].passed && pipes[i].x + pipeWidth < bird.x) {
+                    score++;
+                    pipes[i].passed = true;
+                }
+
+                // Hapus tiang yang sudah keluar layar
+                if (pipes[i].x + pipeWidth < 0) {
+                    pipes.splice(i, 1);
+                }
+            }
+        }
+
+        // Render Grafik ke Layar
+        function draw() {
+            // Clear Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Gambar Burung
+            drawBird();
+
+            // Gambar Tiang
+            ctx.fillStyle = "#2ecc71"; // Warna tiang hijau
+            for (let i = 0; i < pipes.length; i++) {
+                // Tiang atas
+                ctx.fillRect(pipes[i].x, 0, pipeWidth, pipes[i].topHeight);
+                // Tiang bawah
+                ctx.fillRect(pipes[i].x, pipes[i].bottomY, pipeWidth, canvas.height - pipes[i].bottomY);
+            }
+
+            // Gambar Skor
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 24px sans-serif";
+            ctx.fillText("Skor: " + score, 20, 40);
+
+            // Tampilan Game Over
+            if (gameOver) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 30px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 20);
+                
+                ctx.font = "16px sans-serif";
+                ctx.fillText("Klik atau Tekan Spasi untuk Main Lagi", canvas.width / 2, canvas.height / 2 + 20);
+                ctx.textAlign = "start"; // Reset posisi text
+            }
+        }
+
+        function gameLoop() {
+            if (!gameOver) {
+                update();
+            }
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Mulai Game
+        gameLoop();
+    </script>
+</body>
+</html>
