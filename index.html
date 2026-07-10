@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Underbone Modification Simulator</title>
+    <title>Underbone Modification Simulator Pro</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body {
-            background-color: #0b0f19;
+            background-color: #0b0f17;
             color: #fff;
             display: flex;
             justify-content: center;
@@ -19,105 +19,167 @@
         #game-container {
             position: relative;
             width: 100%;
-            max-width: 450px;
-            height: 680px;
+            max-width: 460px;
+            height: 740px;
             background-color: #111827;
-            border: 2px solid #1f2937;
-            border-radius: 20px;
+            border: 3px solid #374151;
+            border-radius: 24px;
             padding: 15px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.7);
         }
-        h1 { font-size: 22px; color: #f59e0b; text-transform: uppercase; text-align: center; margin-bottom: 2px; letter-spacing: 1px; }
-        .subtitle { font-size: 11px; color: #6b7280; text-align: center; margin-bottom: 15px; font-weight: bold; }
+        h1 { font-size: 20px; color: #f59e0b; text-transform: uppercase; text-align: center; letter-spacing: 1px; }
+        .subtitle { font-size: 11px; color: #6b7280; text-align: center; margin-bottom: 12px; font-weight: bold; }
         
         canvas {
-            background: linear-gradient(to bottom, #1f2937, #111827);
-            border-radius: 12px;
+            background: linear-gradient(to bottom, #1f2937, #0f172a);
+            border-radius: 16px;
             border: 2px solid #1f2937;
             width: 100%;
         }
 
-        /* Garasi Menu & Modif Panel */
+        /* Panel Kontrol & Menu Modifikasi */
         .control-panel {
-            margin-top: 15px;
+            margin-top: 12px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             overflow-y: auto;
             padding-right: 2px;
         }
+        /* Style Scrollbar */
+        .control-panel::-webkit-scrollbar { width: 4px; }
+        .control-panel::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+
         .option-group {
             background-color: #030712;
             padding: 10px;
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid #1f2937;
         }
-        .label { font-size: 12px; color: #9ca3af; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; display: block; }
+        .label { font-size: 11px; color: #9ca3af; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; display: block; }
         
         .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .btn-choice {
             background-color: #1f2937; border: 1px solid #374151; color: #cbd5e1;
-            padding: 8px 4px; font-size: 11px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: all 0.1s;
+            padding: 8px 2px; font-size: 11px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: all 0.1s;
+            text-align: center;
         }
         .btn-choice.active { background-color: #f59e0b; color: #030712; border-color: #f59e0b; }
         
-        .color-picker-wrapper { display: flex; align-items: center; gap: 10px; }
-        .input-color { background: none; border: none; width: 40px; height: 30px; cursor: pointer; }
+        .flex-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .input-color { background: none; border: none; width: 50px; height: 28px; cursor: pointer; }
+
+        /* Mode Mengemudi / Test Drive HUD */
+        #drive-hud {
+            display: flex;
+            justify-content: space-around;
+            background: #030712;
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid #1f2937;
+            margin-top: 5px;
+        }
+        .hud-meter { text-align: center; font-weight: bold; font-size: 13px; color: #9ca3af; }
+        .hud-meter span { display: block; font-size: 18px; color: #fbbf24; }
 
         .btn-action {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             color: #030712; border: none; padding: 12px; font-size: 14px;
-            font-weight: bold; border-radius: 8px; cursor: pointer; text-align: center;
-            box-shadow: 0 4px 12px rgba(217,119,6,0.3); margin-top: auto;
+            font-weight: bold; border-radius: 10px; cursor: pointer; text-align: center;
+            box-shadow: 0 4px 15px rgba(217,119,6,0.4); margin-top: 5px;
         }
+        #gasBtn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white; display: none;
+        }
+        #gasBtn:active { background: #047857; transform: scale(0.98); }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <h1>GARASI MODIFIKASI</h1>
-    <div class="subtitle">MEKANIK UTAMA: LIHAN</div>
+    <h1>GARASI MODIFIKASI PRO</h1>
+    <div class="subtitle">BENGKEL REKAYASA: LIHAN</div>
 
-    <canvas id="garageCanvas" width="420" height="260"></canvas>
+    <canvas id="garageCanvas" width="430" height="260"></canvas>
+
+    <div id="drive-hud" class="hidden">
+        <div class="hud-meter">KECEPATAN <span><id id="txt-speed">0</id> KM/H</span></div>
+        <div class="hud-meter">RPM MESIN <span><id id="txt-rpm">1000</id> RPM</span></div>
+    </div>
 
     <div class="control-panel">
-        <div class="option-group">
-            <span class="label">Pilihan Velg (Wheels)</span>
+        <div class="option-group toggle-garage">
+            <span class="label">Basis Model Motor</span>
             <div class="btn-grid">
-                <button class="btn-choice active" onclick="changePart('wheel', 'standar', this)">Standar</button>
-                <button class="btn-choice" onclick="changePart('wheel', 'jari', this)">Jari-Jari TDR</button>
-                <button class="btn-choice" onclick="changePart('wheel', 'chrome', this)">Chrome Racing</button>
+                <button class="btn-choice active" onclick="changePart('model', 'supra', this)">Supra X 125</button>
+                <button class="btn-choice" onclick="changePart('model', 'f1zr', this)">Yamaha F1ZR</button>
             </div>
         </div>
 
-        <div class="option-group">
-            <span class="label">Tipe Knalpot (Exhaust)</span>
+        <div class="option-group toggle-garage">
+            <span class="label">Desain Velg Depan & Belakang</span>
             <div class="btn-grid">
-                <button class="btn-choice active" onclick="changePart('exhaust', 'standar', this)">Standar</button>
-                <button class="btn-choice" onclick="changePart('exhaust', 'brong', this)">Knalpot Brong</button>
+                <button class="btn-choice active" onclick="changePart('wheel', 'standar', this)">Racing Bintang</button>
+                <button class="btn-choice" onclick="changePart('wheel', 'jari-emas', this)">Ruji Emas TDR</button>
+                <button class="btn-choice" onclick="changePart('wheel', 'chrome', this)">Chrome Jari</button>
             </div>
         </div>
 
-        <div class="option-group">
-            <span class="label">Ketinggian Shockbreaker</span>
+        <div class="option-group toggle-garage">
+            <span class="label">Sistem Knalpot</span>
             <div class="btn-grid">
-                <button class="btn-choice" onclick="changePart('shock', 'tinggi', this)">Tinggi</button>
-                <button class="btn-choice active" onclick="changePart('shock', 'normal', this)">Normal</button>
-                <button class="btn-choice" onclick="changePart('shock', 'ceper', this)">Ceper (Melesek)</button>
+                <button class="btn-choice active" onclick="changePart('exhaust', 'standar', this)">Standar Ori</button>
+                <button class="btn-choice" onclick="changePart('exhaust', 'brong', this)">Brong Racing</button>
+                <button class="btn-choice" onclick="changePart('exhaust', 'udang', this)">Udang 2-Tak</button>
             </div>
         </div>
 
-        <div class="option-group">
-            <div class="color-picker-wrapper">
-                <span class="label" style="margin-bottom:0;">Warna Body Motor:</span>
-                <input type="color" id="bodyColorPicker" class="input-color" value="#ef4444" onchange="changeColor(this.value)">
+        <div class="option-group toggle-garage">
+            <span class="label">Grafis / Stripping</span>
+            <div class="btn-grid">
+                <button class="btn-choice active" onclick="changePart('decal', 'polos', this)">Clean Look</button>
+                <button class="btn-choice" onclick="changePart('decal', 'racing', this)">Racing Line</button>
+                <button class="btn-choice" onclick="changePart('decal', 'thai', this)">Thailook Wave</button>
             </div>
         </div>
 
-        <button id="actionBtn" class="btn-action" onclick="toggleMode()">TEST DRIVE (TES JALAN)</button>
+        <div class="option-group toggle-garage">
+            <span class="label">Ketinggian Suspensi Belakang</span>
+            <div class="btn-grid">
+                <button class="btn-choice" onclick="changePart('shock', 'tinggi', this)">Road Race</button>
+                <button class="btn-choice active" onclick="changePart('shock', 'normal', this)">Standar</button>
+                <button class="btn-choice" onclick="changePart('shock', 'ceper', this)">Ceper Kontes</button>
+            </div>
+        </div>
+
+        <div class="option-group toggle-garage">
+            <span class="label">Aksesoris Tambahan</span>
+            <div class="btn-grid">
+                <button class="btn-choice" onclick="changePart('basket', 'ada', this)">Keranjang</button>
+                <button class="btn-choice active" onclick="changePart('basket', 'tidak', this)">Tanpa Ranjang</button>
+                <button class="btn-choice active" onclick="changePart('light', 'led', this)">Lampu LED</button>
+            </div>
+        </div>
+
+        <div class="option-group toggle-garage">
+            <div class="flex-row">
+                <div>
+                    <span class="label" style="margin:0;">Warna Body Utama</span>
+                    <input type="color" id="bodyColor" class="input-color" value="#ef4444" onchange="changeColor('bodyColor', this.value)">
+                </div>
+                <div>
+                    <span class="label" style="margin:0;">Warna Lapisan Sayap</span>
+                    <input type="color" id="wingColor" class="input-color" value="#ffffff" onchange="changeColor('wingColor', this.value)">
+                </div>
+            </div>
+        </div>
+
+        <button id="gasBtn" class="btn-action" onmousedown="pressGas()" onmouseup="releaseGas()" ontouchstart="pressGas()" ontouchend="releaseGas()">TAHAN UNTUK GAS MOTOR ⚡</button>
+        <button id="actionBtn" class="btn-action" onclick="toggleMode()">MASUK MODE TEST DRIVE</button>
     </div>
 </div>
 
@@ -125,230 +187,280 @@
     const canvas = document.getElementById("garageCanvas");
     const ctx = canvas.getContext("2d");
 
-    // State Modifikasi Motor
-    let currentConfig = {
-        wheel: 'standar',
-        exhaust: 'standar',
-        shock: 'normal',
-        bodyColor: '#ef4444'
+    // State Sistem Utama
+    let cfg = {
+        model: 'supra', wheel: 'standar', exhaust: 'standar',
+        decal: 'polos', shock: 'normal', basket: 'tidak', light: 'led',
+        bodyColor: '#ef4444', wingColor: '#ffffff'
     };
 
-    let mode = 'garage'; // 'garage' atau 'testdrive'
-    let animationFrameId;
-    let driveX = 0;
-    let bgScrollX = 0;
-    let wheelRotation = 0;
+    let mode = 'garage'; 
+    let animId;
+    let bgScroll = 0;
+    let wheelRot = 0;
+
+    // State Mesin / Speedometer
+    let speed = 0;
+    let rpm = 1000;
+    let isGassing = false;
 
     function drawMotorcycle(xOffset = 0, yOffset = 0) {
-        // Atur posisi ground dasar berdasarkan tinggi shockbreaker
-        let shockYModifier = 0;
-        if (currentConfig.shock === 'ceper') shockYModifier = 8;
-        if (currentConfig.shock === 'tinggi') shockYModifier = -6;
+        let shockY = 0;
+        if (cfg.shock === 'ceper') shockY = 9;
+        if (cfg.shock === 'tinggi') shockY = -7;
 
-        let groundY = 190 + yOffset;
-        let mainY = groundY - 40 + shockYModifier;
-        let mainX = 140 + xOffset;
+        let groundY = 195 + yOffset;
+        let coreY = groundY - 40 + shockY;
+        let coreX = 145 + xOffset;
 
-        // 1. Gambar Knalpot (Exhaust) - Digambar di belakang rangka
+        // 1. Gambar Knalpot Berdasarkan Jenis
         ctx.save();
-        ctx.translate(mainX, mainY);
-        if (currentConfig.exhaust === 'standar') {
-            ctx.strokeStyle = "#4b5563";
-            ctx.lineWidth = 7;
-            ctx.beginPath(); ctx.moveTo(-20, 20); ctx.lineTo(-70, 10); ctx.stroke();
-        } else { // Knalpot Brong Racing Chrome
-            ctx.strokeStyle = "#94a3b8";
-            ctx.lineWidth = 6;
-            ctx.beginPath(); ctx.moveTo(-20, 20); ctx.lineTo(-75, -5); ctx.stroke();
-            // Ujung corong biru bakar
-            ctx.strokeStyle = "#3b82f6";
-            ctx.lineWidth = 7;
-            ctx.beginPath(); ctx.moveTo(-70, -2); ctx.lineTo(-76, -6); ctx.stroke();
+        ctx.translate(coreX, coreY);
+        ctx.lineWidth = 6;
+        if (cfg.exhaust === 'standar') {
+            ctx.strokeStyle = "#374151";
+            ctx.beginPath(); ctx.moveTo(-15, 20); ctx.lineTo(-70, 12); ctx.stroke();
+        } else if (cfg.exhaust === 'brong') {
+            ctx.strokeStyle = "#cbd5e1";
+            ctx.beginPath(); ctx.moveTo(-15, 20); ctx.lineTo(-75, -2); ctx.stroke();
+            ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 7; // Ujung blue-burn
+            ctx.beginPath(); ctx.moveTo(-70, 0); ctx.lineTo(-77, -3); ctx.stroke();
+        } else if (cfg.exhaust === 'udang') { // Knalpot Kolong Lobster 2-Tak
+            ctx.strokeStyle = "#1f2937"; ctx.lineWidth = 10;
+            ctx.beginPath(); ctx.arc(-10, 25, 12, 0, Math.PI); ctx.stroke(); // Perut gembung
+            ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(-20, 25); ctx.lineTo(-75, 5); ctx.stroke(); // Silencer tipis
         }
         ctx.restore();
 
-        // 2. Gambar Shockbreaker Belakang
-        ctx.strokeStyle = currentConfig.shock === 'ceper' ? "#ef4444" : "#fbbf24";
+        // 2. Suspensi Belakang
+        ctx.strokeStyle = cfg.shock === 'ceper' ? "#ef4444" : "#eab308";
         ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(coreX - 45, coreY + 10); ctx.lineTo(coreX - 52, coreY - 15 - shockY); ctx.stroke();
+
+        // 3. Pasang Sepasang Roda
+        drawWheelHub(coreX - 65, groundY, cfg.wheel);
+        drawWheelHub(coreX + 95, groundY, cfg.wheel);
+
+        // 4. Garis Shock Depan
+        ctx.strokeStyle = "#64748b"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(coreX + 95, groundY); ctx.lineTo(coreX + 72, coreY - 45); ctx.stroke();
+
+        // 5. RENDERING BODI UTAMA (Berdasarkan Pilihan Model)
+        ctx.fillStyle = cfg.bodyColor;
         ctx.beginPath();
-        ctx.moveTo(mainX - 45, mainY + 10);
-        ctx.lineTo(mainX - 55, mainY - 15 - shockYModifier);
-        ctx.stroke();
+        if (cfg.model === 'supra') {
+            // Desain Sayap Supra X Modern
+            ctx.moveTo(coreX - 70, coreY - 12); 
+            ctx.lineTo(coreX - 10, coreY - 18); 
+            ctx.lineTo(coreX + 45, coreY - 32); 
+            ctx.lineTo(coreX + 76, coreY - 42); // Kepala batok
+            ctx.lineTo(coreX + 66, coreY - 2);  // Sayap tameng dada
+            ctx.lineTo(coreX + 25, coreY + 16); 
+            ctx.lineTo(coreX - 50, coreY + 20);
+        } else {
+            // Desain Klasik Kotak Lancip Yamaha F1ZR
+            ctx.moveTo(coreX - 65, coreY - 5); 
+            ctx.lineTo(coreX - 15, coreY - 12); 
+            ctx.lineTo(coreX + 35, coreY - 28); 
+            ctx.lineTo(coreX + 72, coreY - 45); 
+            ctx.lineTo(coreX + 70, coreY - 10); 
+            ctx.lineTo(coreX + 35, coreY + 18); 
+            ctx.lineTo(coreX - 45, coreY + 20);
+        }
+        ctx.closePath(); ctx.fill();
 
-        // 3. Gambar Ban Belakang & Depan
-        drawWheel(mainX - 65, groundY, currentConfig.wheel);
-        drawWheel(mainX + 95, groundY, currentConfig.wheel);
-
-        // 4. Sasis/Rangka Swingarm bawah
-        ctx.strokeStyle = "#4b5563";
-        ctx.lineWidth = 6;
-        ctx.beginPath(); ctx.moveTo(mainX - 65, groundY); ctx.lineTo(mainX, mainY + 20); ctx.stroke();
-
-        // 5. Garis Shock Depan (Teleskopik)
-        ctx.strokeStyle = "#94a3b8";
-        ctx.lineWidth = 5;
-        ctx.beginPath(); ctx.moveTo(mainX + 95, groundY); ctx.lineTo(mainX + 70, mainY - 45); ctx.stroke();
-
-        // 6. BODY MOTOR UTAMA (Bebek/Underbone Style)
-        ctx.fillStyle = currentConfig.bodyColor;
+        // Layer Sayap Dalam/Leg Shield (Bisa Berbeda Warna)
+        ctx.fillStyle = cfg.wingColor;
         ctx.beginPath();
-        ctx.moveTo(mainX - 70, mainY - 15); // Sayap belakang / Jok atas
-        ctx.lineTo(mainX - 10, mainY - 20); // Tengah sadel
-        ctx.lineTo(mainX + 45, mainY - 35); // Dek tengah
-        ctx.lineTo(mainX + 75, mainY - 45); // Batok stang kepala
-        ctx.lineTo(mainX + 65, mainY - 5);  // Sayap depan dada
-        ctx.lineTo(mainX + 25, mainY + 15); // Blok mesin bawah
-        ctx.lineTo(mainX - 50, mainY + 20); // Spakbor kolong belakang
-        ctx.closePath();
-        ctx.fill();
+        ctx.moveTo(coreX + 15, coreY - 10);
+        ctx.lineTo(coreX + 45, coreY - 28);
+        ctx.lineTo(coreX + 62, coreY - 5);
+        ctx.lineTo(coreX + 30, coreY + 12);
+        ctx.closePath(); ctx.fill();
 
-        // Detail Jok Hitam
-        ctx.fillStyle = "#1f2937";
+        // 6. GRAFIS / STRIPPING DECAL
+        if (cfg.decal !== 'polos') {
+            ctx.strokeStyle = cfg.decal === 'racing' ? "#eab308" : "#ec4899";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(coreX - 45, coreY + 5); ctx.lineTo(coreX + 10, coreY - 5);
+            ctx.moveTo(coreX + 35, coreY - 15); ctx.lineTo(coreX + 55, coreY - 5);
+            ctx.stroke();
+        }
+
+        // 7. Jok Pengendara (Hitam)
+        ctx.fillStyle = "#1e293b";
         ctx.beginPath();
-        ctx.moveTo(mainX - 68, mainY - 15);
-        ctx.lineTo(mainX + 15, mainY - 22);
-        ctx.lineTo(mainX + 20, mainY - 12);
-        ctx.lineTo(mainX - 50, mainY - 2);
-        ctx.closePath();
-        ctx.fill();
+        ctx.moveTo(coreX - 66, coreY - 12); ctx.lineTo(coreX + 12, coreY - 19);
+        ctx.lineTo(coreX + 18, coreY - 10); ctx.lineTo(coreX - 48, coreY - 1);
+        ctx.closePath(); ctx.fill();
 
-        // Stang Kemudi Mini
-        ctx.strokeStyle = "#111827";
-        ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.moveTo(mainX + 72, mainY - 43); ctx.lineTo(mainX + 60, mainY - 48); ctx.stroke();
+        // 8. Sorot Lampu Depan
+        ctx.fillStyle = cfg.light === 'led' ? "rgba(56, 189, 248, 0.4)" : "rgba(250, 204, 21, 0.4)";
+        ctx.beginPath();
+        ctx.moveTo(coreX + 76, coreY - 38);
+        ctx.lineTo(coreX + 130, coreY - 25);
+        ctx.lineTo(coreX + 120, coreY + 5);
+        ctx.closePath(); ctx.fill();
+
+        // 9. Aksesoris Keranjang Depan
+        if (cfg.basket === 'ada') {
+            ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2;
+            ctx.strokeRect(coreX + 70, coreY - 25, 20, 16);
+            ctx.beginPath(); ctx.moveTo(coreX + 70, coreY - 15); ctx.lineTo(coreX + 90, coreY - 15); ctx.stroke();
+        }
     }
 
-    function drawWheel(x, y, type) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(wheelRotation);
+    function drawWheelHub(x, y, style) {
+        ctx.save(); ctx.translate(x, y);
+        ctx.rotate(wheelRot);
 
-        // Ban Luar Hitam
-        ctx.beginPath();
-        ctx.arc(0, 0, 26, 0, Math.PI * 2);
-        ctx.fillStyle = "#1e293b";
-        ctx.fill();
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = "#0f172a";
-        ctx.stroke();
+        // Lapisan Ban Karet Luar
+        ctx.beginPath(); ctx.arc(0, 0, 25, 0, Math.PI * 2);
+        ctx.fillStyle = "#1e293b"; ctx.fill();
+        ctx.lineWidth = 4; ctx.strokeStyle = "#090d16"; ctx.stroke();
 
-        // Tipe Velg Dalam
-        if (type === 'standar') {
+        // Variasi Model Velg
+        if (style === 'standar') { // Velg Racing Bintang Sporty
             ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2);
-            ctx.fillStyle = "#64748b"; ctx.fill();
-            // Palang 5 Balok standar
-            ctx.strokeStyle = "#334155"; ctx.lineWidth = 4;
+            ctx.fillStyle = "#475569"; ctx.fill();
+            ctx.strokeStyle = "#1e293b"; ctx.lineWidth = 3;
             for(let i=0; i<5; i++) {
                 ctx.rotate((2 * Math.PI) / 5);
                 ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, 18); ctx.stroke();
             }
-        } else if (type === 'jari') {
+        } else if (style === 'jari-emas') { // Ruji Jari Kontes Emas
             ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2);
-            ctx.fillStyle = "#111827"; ctx.fill();
-            ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1;
-            // Anyaman ruji/jari-jari emas/silver
-            for(let i=0; i<36; i++) {
-                ctx.rotate((2 * Math.PI) / 36);
+            ctx.fillStyle = "#0f172a"; ctx.fill();
+            ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1;
+            for(let i=0; i<32; i++) {
+                ctx.rotate((2 * Math.PI) / 32);
                 ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, 19); ctx.stroke();
             }
-        } else if (type === 'chrome') {
-            // Velg Chrome Mengkilap Lingkaran Tipis
+        } else if (style === 'chrome') { // Jari Rapat Kilap
             ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2);
-            ctx.lineWidth = 3; ctx.strokeStyle = "#f1f5f9"; ctx.stroke();
-            ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.fill();
-            // Palang bintang sport racing
-            ctx.strokeStyle = "#f1f5f9"; ctx.lineWidth = 3;
-            for(let i=0; i<3; i++) {
-                ctx.rotate((2 * Math.PI) / 3);
-                ctx.beginPath(); ctx.moveTo(0,-19); ctx.lineTo(0, 19); ctx.stroke();
+            ctx.strokeStyle = "#f1f5f9"; ctx.lineWidth = 2; ctx.stroke();
+            ctx.strokeStyle = "rgba(241,245,249,0.6)"; ctx.lineWidth = 0.8;
+            for(let i=0; i<64; i++) {
+                ctx.rotate((2 * Math.PI) / 64);
+                ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, 19); ctx.stroke();
             }
         }
 
-        // Hub As Tengah
-        ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2);
-        ctx.fillStyle = "#cbd5e1"; ctx.fill();
-
+        // As Roda Tengah
+        ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#94a3b8"; ctx.fill();
         ctx.restore();
     }
 
     function renderGarage() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Gambar Lantai Tegel Bengkel
-        ctx.fillStyle = "#374151"; ctx.fillRect(0, 190, canvas.width, canvas.height - 190);
+        // Lantai Bengkel Bergaris tegel
+        ctx.fillStyle = "#374151"; ctx.fillRect(0, 195, canvas.width, canvas.height - 195);
         ctx.fillStyle = "#1f2937";
-        for (let i = 0; i < canvas.width; i += 40) {
-            ctx.fillRect(i, 190, 2, canvas.height - 190);
+        for (let i = 0; i < canvas.width; i += 35) {
+            ctx.fillRect(i, 195, 2, canvas.height - 195);
         }
 
-        // Gambar Standar Tengah Penahan Motor (Hanya ada di Garasi)
+        // Paddock / Standar Tengah Motor
         ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.moveTo(140, 180); ctx.lineTo(125, 215); ctx.lineTo(115, 215); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(145, 185); ctx.lineTo(130, 220); ctx.lineTo(118, 220); ctx.stroke();
 
         drawMotorcycle();
     }
 
-    // Loop Animasi Jalan Raya (Test Drive)
     function renderTestDrive() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Gerakkan Background Jalanan Lurus
-        bgScrollX -= 8;
-        if (bgScrollX < -60) bgScrollX = 0;
-        wheelRotation += 0.25; // Putar roda motor
-
-        // Aspal Jalanan Bergerak
-        ctx.fillStyle = "#1f2937"; ctx.fillRect(0, 190, canvas.width, canvas.height - 190);
-        ctx.fillStyle = "#fbbf24"; // Markah jalan kuning putus-putus
-        for(let i = bgScrollX; i < canvas.width + 100; i += 60) {
-            ctx.fillRect(i, 215, 35, 5);
+        // Simulasi Logika Kecepatan Berdasarkan Gas
+        if (isGassing) {
+            speed += 1.5;
+            rpm += 120;
+            if (speed > 140) speed = 140; // Top speed limiter
+            if (rpm > 9500) rpm = 9500 + (Math.random() * 200 - 100); // Redline brebet
+        } else {
+            speed -= 2.0;
+            rpm -= 150;
+            if (speed < 0) speed = 0;
+            if (rpm < 1000) rpm = 1000;
         }
 
-        // Efek Jamping/Getaran Mesin tipis (Vibration Effect)
-        let engineVibeY = Math.sin(Date.now() * 0.05) * 1.5;
+        // Update Indikator Angka HUD Teks
+        document.getElementById("txt-speed").innerText = Math.floor(speed);
+        document.getElementById("txt-rpm").innerText = Math.floor(rpm);
+
+        // Efek Perputaran Roda & Jalan Raya Berdasarkan Kecepatan Bergerak
+        let moveFactor = speed * 0.15;
+        bgScroll -= moveFactor;
+        if (bgScroll < -60) bgScroll = 0;
+        wheelRot += moveFactor * 0.05;
+
+        // Gambar Aspal Jalan Raya
+        ctx.fillStyle = "#1e293b"; ctx.fillRect(0, 195, canvas.width, canvas.height - 195);
+        ctx.fillStyle = "#eab308"; // Markah Jalan Kuning
+        for(let i = bgScroll; i < canvas.width + 100; i += 60) {
+            ctx.fillRect(i, 220, 30, 5);
+        }
+
+        // Efek Getaran Bodi Motor Sesuai Tinggi RPM Mesin
+        let vibeIntensity = (rpm / 9500) * 3;
+        let engineVibeY = Math.sin(Date.now() * 0.08) * vibeIntensity;
 
         drawMotorcycle(-20, engineVibeY);
 
-        animationFrameId = requestAnimationFrame(renderTestDrive);
+        animId = requestAnimationFrame(renderTestDrive);
     }
 
-    function changePart(category, value, btnElement) {
-        currentConfig[category] = value;
-        
-        // Ganti status kelas tombol aktif
-        const siblings = btnElement.parentElement.querySelectorAll('.btn-choice');
-        siblings.forEach(btn => btn.classList.remove('active'));
-        btnElement.classList.add('active');
-
+    function changePart(category, value, btn) {
+        cfg[category] = value;
+        btn.parentElement.querySelectorAll('.btn-choice').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         if (mode === 'garage') renderGarage();
     }
 
-    function changeColor(hexColor) {
-        currentConfig.bodyColor = hexColor;
+    function changeColor(key, hex) {
+        cfg[key] = hex;
         if (mode === 'garage') renderGarage();
     }
+
+    function pressGas() { isGassing = true; }
+    function releaseGas() { isGassing = false; }
 
     function toggleMode() {
         const btn = document.getElementById("actionBtn");
+        const gasBtn = document.getElementById("gasBtn");
+        const hud = document.getElementById("drive-hud");
+        const garageMenus = document.querySelectorAll(".toggle-garage");
+
         if (mode === 'garage') {
             mode = 'testdrive';
-            btn.innerText = "KEMBALI KE GARASI";
+            btn.innerText = "KEMBALI KE GARASI BENGKEL";
             btn.style.background = "linear-gradient(135deg, #ef4444, #b91c1c)";
             btn.style.color = "#fff";
+            gasBtn.style.display = "block";
+            hud.classList.remove("hidden");
+            garageMenus.forEach(m => m.classList.add("hidden"));
             renderTestDrive();
         } else {
             mode = 'garage';
-            btn.innerText = "TEST DRIVE (TES JALAN)";
+            isGassing = false;
+            speed = 0; rpm = 1000;
+            btn.innerText = "MASUK MODE TEST DRIVE";
             btn.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
             btn.style.color = "#030712";
-            cancelAnimationFrame(animationFrameId);
+            gasBtn.style.display = "none";
+            hud.classList.add("hidden");
+            garageMenus.forEach(m => m.style.display = "");
+            garageMenus.forEach(m => m.classList.remove("hidden"));
+            cancelAnimationFrame(animId);
             renderGarage();
         }
     }
 
-    // Booting Game Pertama Kali
+    // Eksekusi Pemuatan Layar Pertama
     renderGarage();
 </script>
 </body>
-    </html>
-    
+</html>
