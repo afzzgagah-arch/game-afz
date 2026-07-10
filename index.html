@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Block Blast (Real Drag & Drop)</title>
+    <title>Underbone Modification Simulator</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body {
@@ -19,7 +19,7 @@
         #game-container {
             position: relative;
             width: 100%;
-            max-width: 420px;
+            max-width: 450px;
             height: 680px;
             background-color: #111827;
             border: 2px solid #1f2937;
@@ -27,376 +27,328 @@
             padding: 15px;
             display: flex;
             flex-direction: column;
-            align-items: center;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
-        .screen {
-            position: absolute;
-            inset: 0;
-            background: #0b0f19;
-            border-radius: 18px;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 25px;
-            text-align: center;
-        }
-        .hidden { display: none !important; }
-        h1 { font-size: 32px; color: #a855f7; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 15px rgba(168,85,247,0.4); margin-bottom: 5px; }
-        .author { font-size: 11px; color: #4b5563; margin-bottom: 40px; font-weight: bold; }
-        .btn {
-            background: linear-gradient(135deg, #a855f7, #7c3aed);
-            color: white; border: none; padding: 12px 35px; font-size: 15px;
-            font-weight: bold; border-radius: 8px; cursor: pointer;
-            box-shadow: 0 4px 12px rgba(124,58,237,0.3);
-        }
-        .btn-sec { background: #1f2937; color: #9ca3af; margin-top: 10px; padding: 8px 15px; font-size: 13px; }
-        #hud { width: 100%; display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 16px; font-weight: bold; color: #9ca3af; }
-        .score-box span { color: #a855f7; font-size: 22px; }
+        h1 { font-size: 22px; color: #f59e0b; text-transform: uppercase; text-align: center; margin-bottom: 2px; letter-spacing: 1px; }
+        .subtitle { font-size: 11px; color: #6b7280; text-align: center; margin-bottom: 15px; font-weight: bold; }
+        
         canvas {
-            background-color: #030712;
+            background: linear-gradient(to bottom, #1f2937, #111827);
             border-radius: 12px;
             border: 2px solid #1f2937;
-            touch-action: none; /* Cegah layar HP ikut goyang pas nge-drag */
-            cursor: grab;
+            width: 100%;
+        }
+
+        /* Garasi Menu & Modif Panel */
+        .control-panel {
+            margin-top: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+        .option-group {
+            background-color: #030712;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+        }
+        .label { font-size: 12px; color: #9ca3af; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; display: block; }
+        
+        .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .btn-choice {
+            background-color: #1f2937; border: 1px solid #374151; color: #cbd5e1;
+            padding: 8px 4px; font-size: 11px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: all 0.1s;
+        }
+        .btn-choice.active { background-color: #f59e0b; color: #030712; border-color: #f59e0b; }
+        
+        .color-picker-wrapper { display: flex; align-items: center; gap: 10px; }
+        .input-color { background: none; border: none; width: 40px; height: 30px; cursor: pointer; }
+
+        .btn-action {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #030712; border: none; padding: 12px; font-size: 14px;
+            font-weight: bold; border-radius: 8px; cursor: pointer; text-align: center;
+            box-shadow: 0 4px 12px rgba(217,119,6,0.3); margin-top: auto;
         }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div id="menu-screen" class="screen">
-        <h1>BLOCK BLAST</h1>
-        <div class="author">EDISI DRAG & DROP: LIHAN</div>
-        <button class="btn" onclick="startGame()">MULAI BERMAIN</button>
-    </div>
+    <h1>GARASI MODIFIKASI</h1>
+    <div class="subtitle">MEKANIK UTAMA: LIHAN</div>
 
-    <div id="game-over-screen" class="screen hidden">
-        <h1 style="color: #ef4444;">GAME OVER</h1>
-        <p style="color: #4b5563; margin-bottom: 15px;">Langkah terhenti! Tidak ada ruang tersisa.</p>
-        <div style="font-size: 15px; margin-bottom: 25px;">Skor Akhir: <span id="final-score" style="color:#a855f7; font-size:24px; font-weight:bold;">0</span></div>
-        <button class="btn" onclick="startGame()">COBA LAGI</button>
-        <button class="btn btn-sec" onclick="showMenu()">MENU UTAMA</button>
-    </div>
+    <canvas id="garageCanvas" width="420" height="260"></canvas>
 
-    <div id="hud">
-        <div class="score-box">SKOR: <span id="score">0</span></div>
-        <div class="score-box">TERBAIK: <span id="high-score">0</span></div>
-    </div>
+    <div class="control-panel">
+        <div class="option-group">
+            <span class="label">Pilihan Velg (Wheels)</span>
+            <div class="btn-grid">
+                <button class="btn-choice active" onclick="changePart('wheel', 'standar', this)">Standar</button>
+                <button class="btn-choice" onclick="changePart('wheel', 'jari', this)">Jari-Jari TDR</button>
+                <button class="btn-choice" onclick="changePart('wheel', 'chrome', this)">Chrome Racing</button>
+            </div>
+        </div>
 
-    <canvas id="gameCanvas" width="390" height="600"></canvas>
+        <div class="option-group">
+            <span class="label">Tipe Knalpot (Exhaust)</span>
+            <div class="btn-grid">
+                <button class="btn-choice active" onclick="changePart('exhaust', 'standar', this)">Standar</button>
+                <button class="btn-choice" onclick="changePart('exhaust', 'brong', this)">Knalpot Brong</button>
+            </div>
+        </div>
+
+        <div class="option-group">
+            <span class="label">Ketinggian Shockbreaker</span>
+            <div class="btn-grid">
+                <button class="btn-choice" onclick="changePart('shock', 'tinggi', this)">Tinggi</button>
+                <button class="btn-choice active" onclick="changePart('shock', 'normal', this)">Normal</button>
+                <button class="btn-choice" onclick="changePart('shock', 'ceper', this)">Ceper (Melesek)</button>
+            </div>
+        </div>
+
+        <div class="option-group">
+            <div class="color-picker-wrapper">
+                <span class="label" style="margin-bottom:0;">Warna Body Motor:</span>
+                <input type="color" id="bodyColorPicker" class="input-color" value="#ef4444" onchange="changeColor(this.value)">
+            </div>
+        </div>
+
+        <button id="actionBtn" class="btn-action" onclick="toggleMode()">TEST DRIVE (TES JALAN)</button>
+    </div>
 </div>
 
 <script>
-    const canvas = document.getElementById("gameCanvas");
+    const canvas = document.getElementById("garageCanvas");
     const ctx = canvas.getContext("2d");
 
-    const BOARD_SIZE = 8;
-    const CELL_COUNT = 8;
-    let cellSize = 45; 
-    let boardStartX = 15;
-    let boardStartY = 15;
+    // State Modifikasi Motor
+    let currentConfig = {
+        wheel: 'standar',
+        exhaust: 'standar',
+        shock: 'normal',
+        bodyColor: '#ef4444'
+    };
 
-    let board = [];
-    let score = 0;
-    let highScore = 0;
-    let pieces = [];
-    
-    // Logika Dragging
-    let isDragging = false;
-    let draggedPiece = null;
-    let dragIndex = -1;
-    let dragOffsetX = 0;
-    let dragOffsetY = 0;
-    let currentMouseX = 0;
-    let currentMouseY = 0;
+    let mode = 'garage'; // 'garage' atau 'testdrive'
+    let animationFrameId;
+    let driveX = 0;
+    let bgScrollX = 0;
+    let wheelRotation = 0;
 
-    const colors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#a855f7", "#06b6d4"];
-    const shapes = [
-        [[1]], 
-        [[1, 1]], 
-        [[1, 1, 1]],
-        [[1, 1], [1, 1]], 
-        [[1, 0], [1, 0], [1, 1]], 
-        [[0, 1], [0, 1], [1, 1]], 
-        [[1, 1, 1], [0, 1, 0]]
-    ];
+    function drawMotorcycle(xOffset = 0, yOffset = 0) {
+        // Atur posisi ground dasar berdasarkan tinggi shockbreaker
+        let shockYModifier = 0;
+        if (currentConfig.shock === 'ceper') shockYModifier = 8;
+        if (currentConfig.shock === 'tinggi') shockYModifier = -6;
 
-    // Posisi Spawn 3 Balok di Bawah
-    const spawnSlots = [
-        { x: 45, y: 440 },
-        { x: 170, y: 440 },
-        { x: 295, y: 440 }
-    ];
+        let groundY = 190 + yOffset;
+        let mainY = groundY - 40 + shockYModifier;
+        let mainX = 140 + xOffset;
 
-    function showMenu() {
-        document.getElementById("menu-screen").classList.remove("hidden");
-        document.getElementById("game-over-screen").classList.add("hidden");
+        // 1. Gambar Knalpot (Exhaust) - Digambar di belakang rangka
+        ctx.save();
+        ctx.translate(mainX, mainY);
+        if (currentConfig.exhaust === 'standar') {
+            ctx.strokeStyle = "#4b5563";
+            ctx.lineWidth = 7;
+            ctx.beginPath(); ctx.moveTo(-20, 20); ctx.lineTo(-70, 10); ctx.stroke();
+        } else { // Knalpot Brong Racing Chrome
+            ctx.strokeStyle = "#94a3b8";
+            ctx.lineWidth = 6;
+            ctx.beginPath(); ctx.moveTo(-20, 20); ctx.lineTo(-75, -5); ctx.stroke();
+            // Ujung corong biru bakar
+            ctx.strokeStyle = "#3b82f6";
+            ctx.lineWidth = 7;
+            ctx.beginPath(); ctx.moveTo(-70, -2); ctx.lineTo(-76, -6); ctx.stroke();
+        }
+        ctx.restore();
+
+        // 2. Gambar Shockbreaker Belakang
+        ctx.strokeStyle = currentConfig.shock === 'ceper' ? "#ef4444" : "#fbbf24";
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(mainX - 45, mainY + 10);
+        ctx.lineTo(mainX - 55, mainY - 15 - shockYModifier);
+        ctx.stroke();
+
+        // 3. Gambar Ban Belakang & Depan
+        drawWheel(mainX - 65, groundY, currentConfig.wheel);
+        drawWheel(mainX + 95, groundY, currentConfig.wheel);
+
+        // 4. Sasis/Rangka Swingarm bawah
+        ctx.strokeStyle = "#4b5563";
+        ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.moveTo(mainX - 65, groundY); ctx.lineTo(mainX, mainY + 20); ctx.stroke();
+
+        // 5. Garis Shock Depan (Teleskopik)
+        ctx.strokeStyle = "#94a3b8";
+        ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(mainX + 95, groundY); ctx.lineTo(mainX + 70, mainY - 45); ctx.stroke();
+
+        // 6. BODY MOTOR UTAMA (Bebek/Underbone Style)
+        ctx.fillStyle = currentConfig.bodyColor;
+        ctx.beginPath();
+        ctx.moveTo(mainX - 70, mainY - 15); // Sayap belakang / Jok atas
+        ctx.lineTo(mainX - 10, mainY - 20); // Tengah sadel
+        ctx.lineTo(mainX + 45, mainY - 35); // Dek tengah
+        ctx.lineTo(mainX + 75, mainY - 45); // Batok stang kepala
+        ctx.lineTo(mainX + 65, mainY - 5);  // Sayap depan dada
+        ctx.lineTo(mainX + 25, mainY + 15); // Blok mesin bawah
+        ctx.lineTo(mainX - 50, mainY + 20); // Spakbor kolong belakang
+        ctx.closePath();
+        ctx.fill();
+
+        // Detail Jok Hitam
+        ctx.fillStyle = "#1f2937";
+        ctx.beginPath();
+        ctx.moveTo(mainX - 68, mainY - 15);
+        ctx.lineTo(mainX + 15, mainY - 22);
+        ctx.lineTo(mainX + 20, mainY - 12);
+        ctx.lineTo(mainX - 50, mainY - 2);
+        ctx.closePath();
+        ctx.fill();
+
+        // Stang Kemudi Mini
+        ctx.strokeStyle = "#111827";
+        ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(mainX + 72, mainY - 43); ctx.lineTo(mainX + 60, mainY - 48); ctx.stroke();
     }
 
-    function startGame() {
-        document.getElementById("menu-screen").classList.add("hidden");
-        document.getElementById("game-over-screen").classList.add("hidden");
-        score = 0;
-        document.getElementById("score").innerText = score;
+    function drawWheel(x, y, type) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(wheelRotation);
 
-        // Kosongkan Papan
-        for (let r = 0; r < BOARD_SIZE; r++) {
-            board[r] = [];
-            for (let c = 0; c < BOARD_SIZE; c++) {
-                board[r][c] = 0;
+        // Ban Luar Hitam
+        ctx.beginPath();
+        ctx.arc(0, 0, 26, 0, Math.PI * 2);
+        ctx.fillStyle = "#1e293b";
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#0f172a";
+        ctx.stroke();
+
+        // Tipe Velg Dalam
+        if (type === 'standar') {
+            ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2);
+            ctx.fillStyle = "#64748b"; ctx.fill();
+            // Palang 5 Balok standar
+            ctx.strokeStyle = "#334155"; ctx.lineWidth = 4;
+            for(let i=0; i<5; i++) {
+                ctx.rotate((2 * Math.PI) / 5);
+                ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, 18); ctx.stroke();
+            }
+        } else if (type === 'jari') {
+            ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2);
+            ctx.fillStyle = "#111827"; ctx.fill();
+            ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 1;
+            // Anyaman ruji/jari-jari emas/silver
+            for(let i=0; i<36; i++) {
+                ctx.rotate((2 * Math.PI) / 36);
+                ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, 19); ctx.stroke();
+            }
+        } else if (type === 'chrome') {
+            // Velg Chrome Mengkilap Lingkaran Tipis
+            ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2);
+            ctx.lineWidth = 3; ctx.strokeStyle = "#f1f5f9"; ctx.stroke();
+            ctx.fillStyle = "rgba(255,255,255,0.1)"; ctx.fill();
+            // Palang bintang sport racing
+            ctx.strokeStyle = "#f1f5f9"; ctx.lineWidth = 3;
+            for(let i=0; i<3; i++) {
+                ctx.rotate((2 * Math.PI) / 3);
+                ctx.beginPath(); ctx.moveTo(0,-19); ctx.lineTo(0, 19); ctx.stroke();
             }
         }
-        spawnPieces();
-        draw();
+
+        // Hub As Tengah
+        ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2);
+        ctx.fillStyle = "#cbd5e1"; ctx.fill();
+
+        ctx.restore();
     }
 
-    function spawnPieces() {
-        pieces = [];
-        for (let i = 0; i < 3; i++) {
-            let shape = shapes[Math.floor(Math.random() * shapes.length)];
-            let color = colors[Math.floor(Math.random() * colors.length)];
-            pieces.push({
-                shape: shape,
-                color: color,
-                x: spawnSlots[i].x,
-                y: spawnSlots[i].y,
-                origX: spawnSlots[i].x,
-                origY: spawnSlots[i].y,
-                scale: 0.55, // Perkecil saat di slot bawah
-                used: false
-            });
+    function renderGarage() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Gambar Lantai Tegel Bengkel
+        ctx.fillStyle = "#374151"; ctx.fillRect(0, 190, canvas.width, canvas.height - 190);
+        ctx.fillStyle = "#1f2937";
+        for (let i = 0; i < canvas.width; i += 40) {
+            ctx.fillRect(i, 190, 2, canvas.height - 190);
         }
-        checkGameOver();
+
+        // Gambar Standar Tengah Penahan Motor (Hanya ada di Garasi)
+        ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(140, 180); ctx.lineTo(125, 215); ctx.lineTo(115, 215); ctx.stroke();
+
+        drawMotorcycle();
     }
 
-    // Menggambar Semua Aset Visual ke Canvas
-    function draw() {
+    // Loop Animasi Jalan Raya (Test Drive)
+    function renderTestDrive() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 1. Gambar Grid Papan Utama
-        for (let r = 0; r < BOARD_SIZE; r++) {
-            for (let c = 0; c < BOARD_SIZE; c++) {
-                let x = boardStartX + c * (cellSize + 4);
-                let y = boardStartY + r * (cellSize + 4);
-                
-                if (board[r][c] === 0) {
-                    ctx.fillStyle = "#1f2937";
-                } else {
-                    ctx.fillStyle = board[r][c];
-                }
-                
-                // Efek Kotak Melengkung Berwarna
-                ctx.beginPath();
-                ctx.roundRect(x, y, cellSize, cellSize, 4);
-                ctx.fill();
-            }
+        // Gerakkan Background Jalanan Lurus
+        bgScrollX -= 8;
+        if (bgScrollX < -60) bgScrollX = 0;
+        wheelRotation += 0.25; // Putar roda motor
+
+        // Aspal Jalanan Bergerak
+        ctx.fillStyle = "#1f2937"; ctx.fillRect(0, 190, canvas.width, canvas.height - 190);
+        ctx.fillStyle = "#fbbf24"; // Markah jalan kuning putus-putus
+        for(let i = bgScrollX; i < canvas.width + 100; i += 60) {
+            ctx.fillRect(i, 215, 35, 5);
         }
 
-        // 2. Gambar 3 Pilihan Balok di Bawah
-        pieces.forEach((p, idx) => {
-            if (p.used || (isDragging && dragIndex === idx)) return;
-            drawPiece(p, p.x, p.y, p.scale);
-        });
+        // Efek Jamping/Getaran Mesin tipis (Vibration Effect)
+        let engineVibeY = Math.sin(Date.now() * 0.05) * 1.5;
 
-        // 3. Gambar Balok yang Sedang Diseret Mengikuti Jari/Mouse
-        if (isDragging && draggedPiece) {
-            let drawX = currentMouseX - dragOffsetX;
-            let drawY = currentMouseY - dragOffsetY;
-            drawPiece(draggedPiece, drawX, drawY, 1.0); // Skala penuh 1.0 saat di-drag
-        }
+        drawMotorcycle(-20, engineVibeY);
+
+        animationFrameId = requestAnimationFrame(renderTestDrive);
     }
 
-    function drawPiece(p, startX, startY, scale) {
-        let size = cellSize * scale;
-        let gap = 4 * scale;
+    function changePart(category, value, btnElement) {
+        currentConfig[category] = value;
         
-        p.shape.forEach((row, r) => {
-            row.forEach((val, c) => {
-                if (val) {
-                    ctx.fillStyle = p.color;
-                    ctx.beginPath();
-                    ctx.roundRect(startX + c * (size + gap), startY + r * (size + gap), size, size, 4 * scale);
-                    ctx.fill();
-                }
-            });
-        });
+        // Ganti status kelas tombol aktif
+        const siblings = btnElement.parentElement.querySelectorAll('.btn-choice');
+        siblings.forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+
+        if (mode === 'garage') renderGarage();
     }
 
-    // Handler Interaksi (Mouse & Touch HP)
-    function getMousePos(e) {
-        let rect = canvas.getBoundingClientRect();
-        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return {
-            x: clientX - rect.left,
-            y: clientY - rect.top
-        };
+    function changeColor(hexColor) {
+        currentConfig.bodyColor = hexColor;
+        if (mode === 'garage') renderGarage();
     }
 
-    function startDrag(e) {
-        let pos = getMousePos(e);
-        currentMouseX = pos.x;
-        currentMouseY = pos.y;
-
-        // Cek balok mana yang tersentuh di bagian bawah
-        for (let i = 0; i < pieces.length; i++) {
-            let p = pieces[i];
-            if (p.used) continue;
-
-            let pWidth = p.shape[0].length * (cellSize * p.scale + 2);
-            let pHeight = p.shape.length * (cellSize * p.scale + 2);
-
-            if (pos.x >= p.x && pos.x <= p.x + pWidth && pos.y >= p.y && pos.y <= p.y + pHeight) {
-                isDragging = true;
-                dragIndex = i;
-                draggedPiece = p;
-                
-                // Hitung offset titik sentuh agar balok pas di tengah/ujung jari
-                dragOffsetX = pos.x - p.x;
-                dragOffsetY = pos.y - p.y;
-                canvas.style.cursor = "grabbing";
-                break;
-            }
-        }
-    }
-
-    function moveDrag(e) {
-        if (!isDragging) return;
-        let pos = getMousePos(e);
-        currentMouseX = pos.x;
-        currentMouseY = pos.y;
-        draw();
-    }
-
-    function endDrag(e) {
-        if (!isDragging) return;
-        isDragging = false;
-        canvas.style.cursor = "grab";
-
-        let drawX = currentMouseX - dragOffsetX;
-        let drawY = currentMouseY - dragOffsetY;
-
-        // Konversi koordinat seret ke indeks baris & kolom papan utama
-        let targetC = Math.round((drawX - boardStartX) / (cellSize + 4));
-        let targetR = Math.round((drawY - boardStartY) / (cellSize + 4));
-
-        if (canPlace(draggedPiece.shape, targetR, targetC)) {
-            placePiece(draggedPiece.shape, draggedPiece.color, targetR, targetC);
-            draggedPiece.used = true;
-            
-            checkMatches();
-
-            // Kalo 3 balok habis terpakai, spawn 3 lagi
-            if (pieces.every(p => p.used)) {
-                spawnPieces();
-            } else {
-                checkGameOver();
-            }
+    function toggleMode() {
+        const btn = document.getElementById("actionBtn");
+        if (mode === 'garage') {
+            mode = 'testdrive';
+            btn.innerText = "KEMBALI KE GARASI";
+            btn.style.background = "linear-gradient(135deg, #ef4444, #b91c1c)";
+            btn.style.color = "#fff";
+            renderTestDrive();
         } else {
-            // Balok kembali pulang ke slotnya jika dilepas di tempat sembarang
-            draggedPiece.x = draggedPiece.origX;
-            draggedPiece.y = draggedPiece.origY;
-        }
-
-        draggedPiece = null;
-        dragIndex = -1;
-        draw();
-    }
-
-    function canPlace(shape, startR, startC) {
-        if (startR < 0 || startC < 0) return false;
-        for (let r = 0; r < shape.length; r++) {
-            for (let c = 0; c < shape[r].length; c++) {
-                if (shape[r][c]) {
-                    let tr = startR + r;
-                    let tc = startC + c;
-                    if (tr >= BOARD_SIZE || tc >= BOARD_SIZE || board[tr][tc] !== 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
-    function placePiece(shape, color, startR, startC) {
-        for (let r = 0; r < shape.length; r++) {
-            for (let c = 0; c < shape[r].length; c++) {
-                if (shape[r][c]) {
-                    board[startR + r][startC + c] = color;
-                }
-            }
-        }
-        score += 15;
-        document.getElementById("score").innerText = score;
-    }
-
-    function checkMatches() {
-        let rowsToDelete = [];
-        let colsToDelete = [];
-
-        for (let r = 0; r < BOARD_SIZE; r++) {
-            if (board[r].every(cell => cell !== 0)) rowsToDelete.push(r);
-        }
-
-        for (let c = 0; c < BOARD_SIZE; c++) {
-            let colFull = true;
-            for (let r = 0; r < BOARD_SIZE; r++) {
-                if (board[r][c] === 0) { colFull = false; break; }
-            }
-            if (colFull) colsToDelete.push(c);
-        }
-
-        if (rowsToDelete.length > 0 || colsToDelete.length > 0) {
-            rowsToDelete.forEach(r => { for(let c=0; c<BOARD_SIZE; c++) board[r][c] = 0; });
-            colsToDelete.forEach(c => { for(let r=0; r<BOARD_SIZE; r++) board[r][c] = 0; });
-
-            // Ledakan combo bonus skor
-            score += (rowsToDelete.length + colsToDelete.length) * 120;
-            document.getElementById("score").innerText = score;
+            mode = 'garage';
+            btn.innerText = "TEST DRIVE (TES JALAN)";
+            btn.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
+            btn.style.color = "#030712";
+            cancelAnimationFrame(animationFrameId);
+            renderGarage();
         }
     }
 
-    function checkGameOver() {
-        let anyPieceFit = false;
-        let activePieces = pieces.filter(p => !p.used);
-        if (activePieces.length === 0) return;
-
-        for (let i = 0; i < activePieces.length; i++) {
-            let piece = activePieces[i];
-            for (let r = 0; r < BOARD_SIZE; r++) {
-                for (let c = 0; c < BOARD_SIZE; c++) {
-                    if (canPlace(piece.shape, r, c)) {
-                        anyPieceFit = true;
-                        break;
-                    }
-                }
-                if (anyPieceFit) break;
-            }
-            if (anyPieceFit) break;
-        }
-
-        if (!anyPieceFit) {
-            if (score > highScore) highScore = score;
-            document.getElementById("high-score").innerText = highScore;
-            document.getElementById("final-score").innerText = score;
-            document.getElementById("game-over-screen").classList.remove("hidden");
-        }
-    }
-
-    // Event Listener Mouse & Layar Sentuh HP
-    canvas.addEventListener("mousedown", startDrag);
-    window.addEventListener("mousemove", moveDrag);
-    window.addEventListener("mouseup", endDrag);
-
-    canvas.addEventListener("touchstart", startDrag);
-    window.addEventListener("touchmove", moveDrag);
-    window.addEventListener("touchend", endDrag);
-
-    showMenu();
+    // Booting Game Pertama Kali
+    renderGarage();
 </script>
 </body>
-</html>
+    </html>
+    
